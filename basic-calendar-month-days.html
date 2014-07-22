@@ -1,12 +1,18 @@
 <!--
-Shows a single month on a calendar.
+Shows the days for a single month: just the days, no headers.
+
+To the degree possible, all language/culture-specific aspects of this component
+are localizable with the Globalize library (https://github.com/jquery/globalize).
+
+@element basic-calendar-month-days
+@demo http://basic-web-components.github.io/components/basic-calendar-month-days/
 -->
 
 <link rel="import" href="../basic-element/basic-element.html">
 <link rel="import" href="../basic-calendar-day/basic-calendar-day.html">
 <link rel="import" href="../basic-calendar-week/basic-calendar-week.html">
 
-<polymer-element name="basic-calendar-month-days" extends="basic-element" attributes="culture date dayElementTag">
+<polymer-element name="basic-calendar-month-days" extends="basic-element" attributes="culture date dayTag">
 
 <template>
 
@@ -27,19 +33,24 @@ Shows a single month on a calendar.
   }
   </style>
 
-  <basic-calendar-week dayElementTag="{{dayElementTag}}"></basic-calendar-week>
-  <basic-calendar-week dayElementTag="{{dayElementTag}}"></basic-calendar-week>
-  <basic-calendar-week dayElementTag="{{dayElementTag}}"></basic-calendar-week>
-  <basic-calendar-week dayElementTag="{{dayElementTag}}"></basic-calendar-week>
-  <basic-calendar-week dayElementTag="{{dayElementTag}}"></basic-calendar-week>
-  <basic-calendar-week dayElementTag="{{dayElementTag}}"></basic-calendar-week>
+  <basic-calendar-week dayTag="{{dayTag}}"></basic-calendar-week>
+  <basic-calendar-week dayTag="{{dayTag}}"></basic-calendar-week>
+  <basic-calendar-week dayTag="{{dayTag}}"></basic-calendar-week>
+  <basic-calendar-week dayTag="{{dayTag}}"></basic-calendar-week>
+  <basic-calendar-week dayTag="{{dayTag}}"></basic-calendar-week>
+  <basic-calendar-week dayTag="{{dayTag}}"></basic-calendar-week>
 
 </template>
 
 <script>
 Polymer( "basic-calendar-month-days", {
 
-  applyAuthorStyles: true,
+  /**
+   * The Globalize culture/language assigned to this element.
+   *
+   * @attribute culture
+   */
+  culture: null,
 
   cultureChanged: function() {
     var culture = this.culture;
@@ -49,7 +60,11 @@ Polymer( "basic-calendar-month-days", {
     this._refresh();
   },
 
-  // The day elements in the month, returned as an array.
+  /**
+   * Returns the array of day elements for the days in the month.
+   *
+   * @property days
+   */
   get days() {
     var days = [];
     this.weeks.forEach( function( week ) {
@@ -58,31 +73,64 @@ Polymer( "basic-calendar-month-days", {
     return days;
   },
 
+  /**
+   * The date govering which month is shown by the element. This can be any
+   * date within the month.
+   *
+   * @attribute date
+   * @type Date
+   * @default today
+   */
+  date: null,
+
   dateChanged: function() {
     this._refresh();
   },
 
+  /**
+   * Returns the day element corresponding to the given date.
+   *
+   * @method dayElementForDate
+   * @param date
+   */
   dayElementForDate: function( date ) {
     var week = this.weekElementForDate( date );
     return week && week.dayElementForDate( date );
   },
 
-  // Returns the first date of the indicated month. (Earlier dates may appear
-  // earlier in that week of the first date.)
+  /**
+   * The date of the first day in the month.
+   *
+   * Note that there may be days from the previous month that appear (or are
+   * hidden) before this first day of the month.
+   *
+   * @property firstDateOfMonth
+   */
   get firstDateOfMonth() {
     var date = BasicCalendarDay.midnightOnDate( this.date );
     date.setDate( 1 );
     return date;
   },
 
-  // Returns true if the indicated date is within the element's month.
+  /**
+   * Returns true if the given date is in the month shown.
+   *
+   * @method isDateInMonth
+   * @param date
+   */
   isDateInMonth: function( date ) {
     var firstDateOfNextMonth = BasicCalendarDay.offsetDateByDays( this.lastDateOfMonth, 1 );
     return ( date >= this.firstDateOfMonth && date < firstDateOfNextMonth );
   },
 
-  // Returns the last date of the indicated month. (Later dates may appear later
-  // in that week of the last date.)
+  /**
+   * The date of the last day in the month.
+   *
+   * Note that there may be days from the next month that appear (or are hidden)
+   * after this last day of the month.
+   *
+   * @property lastDateOfMonth
+   */
   get lastDateOfMonth() {
     // Get last day of month by going to first day of next month and backing up a day.
     var date = this.firstDateOfMonth;
@@ -99,9 +147,12 @@ Polymer( "basic-calendar-month-days", {
     }
   },
 
-  // Return the week element showing the given date.
-  // Note: this returns false for dates which are visible but outside of the
-  // element's month.
+  /**
+   * Returns the week element for the week containing the given date.
+   *
+   * @method weekElementForDate
+   * @param date
+   */
   weekElementForDate: function( date ) {
     if ( this.isDateInMonth( date ) ) {
       var offset = BasicCalendarWeek.daysSinceFirstDayOfWeek( this.firstDateOfMonth, this.culture );
@@ -113,7 +164,11 @@ Polymer( "basic-calendar-month-days", {
     }
   },
 
-  // The elements for the weeks in the month, returned as an array.
+  /**
+   * Returns the array of week elements for the weeks in the month.
+   *
+   * @property weeks
+   */
   get weeks() {
     return this.shadowRoot.querySelectorAll( "basic-calendar-week" ).array();
   },
