@@ -197,7 +197,7 @@ Polymer( "basic-calendar-month-days", {
       var lastDateOfWeek = BasicCalendarDay.offsetDateByDays( firstDateOfWeek, 6 );
       var isWeekInMonth = ( firstDateOfWeek.getMonth() === month || lastDateOfWeek.getMonth() === month );
       week.classList.toggle( "outsideMonth", !isWeekInMonth );
-    });
+    }.bind( this ));
   }
 
 } );
