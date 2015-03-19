@@ -57,7 +57,7 @@ Polymer({
 
   cultureChanged: function() {
     var culture = this.culture;
-    this.weeks.forEach( function( week ) {
+    this.weeks.forEach(function(week) {
       week.culture = culture;
     });
     this._refresh();
@@ -70,8 +70,8 @@ Polymer({
    */
   get days() {
     var days = [];
-    this.weeks.forEach( function( week ) {
-      days = days.concat( week.days );
+    this.weeks.forEach(function(week) {
+      days = days.concat(week.days);
     });
     return days;
   },
@@ -96,9 +96,9 @@ Polymer({
    * @method dayElementForDate
    * @param date
    */
-  dayElementForDate: function( date ) {
-    var week = this.weekElementForDate( date );
-    return week && week.dayElementForDate( date );
+  dayElementForDate: function(date) {
+    var week = this.weekElementForDate(date);
+    return week && week.dayElementForDate(date);
   },
 
   /**
@@ -110,8 +110,8 @@ Polymer({
    * @property firstDateOfMonth
    */
   get firstDateOfMonth() {
-    var date = BasicCalendarDay.midnightOnDate( this.date );
-    date.setDate( 1 );
+    var date = BasicCalendarDay.midnightOnDate(this.date);
+    date.setDate(1);
     return date;
   },
 
@@ -121,9 +121,9 @@ Polymer({
    * @method isDateInMonth
    * @param date
    */
-  isDateInMonth: function( date ) {
-    var firstDateOfNextMonth = BasicCalendarDay.offsetDateByDays( this.lastDateOfMonth, 1 );
-    return ( date >= this.firstDateOfMonth && date < firstDateOfNextMonth );
+  isDateInMonth: function(date) {
+    var firstDateOfNextMonth = BasicCalendarDay.offsetDateByDays(this.lastDateOfMonth, 1);
+    return (date >= this.firstDateOfMonth && date < firstDateOfNextMonth);
   },
 
   /**
@@ -137,14 +137,14 @@ Polymer({
   get lastDateOfMonth() {
     // Get last day of month by going to first day of next month and backing up a day.
     var date = this.firstDateOfMonth;
-    date.setMonth( date.getMonth() + 1 );
-    date.setDate( date.getDate() - 1 );
+    date.setMonth(date.getMonth() + 1);
+    date.setDate(date.getDate() - 1);
     return date;
   },
 
   ready: function() {
     this.super();
-    if ( !this.date && typeof BasicCalendarDay.today !== "undefined" ) {
+    if (!this.date && typeof BasicCalendarDay.today !== 'undefined') {
       // If no date is supplied, default to the current month.
       this.date = BasicCalendarDay.today();
     }
@@ -156,12 +156,13 @@ Polymer({
    * @method weekElementForDate
    * @param date
    */
-  weekElementForDate: function( date ) {
-    if ( this.isDateInMonth( date ) ) {
-      var offset = BasicCalendarWeek.daysSinceFirstDayOfWeek( this.firstDateOfMonth, this.culture );
-      weekIndex = Math.floor( ( date.getDate() + offset - 1 ) / 7 );
-      return this.weeks[ weekIndex ];
-    } else {
+  weekElementForDate: function(date) {
+    if (this.isDateInMonth(date)) {
+      var offset = BasicCalendarWeek.daysSinceFirstDayOfWeek(this.firstDateOfMonth, this.culture);
+      weekIndex = Math.floor((date.getDate() + offset - 1) / 7);
+      return this.weeks[weekIndex];
+    }
+    else {
       // Date falls outside month.
       return null;
     }
@@ -173,34 +174,34 @@ Polymer({
    * @property weeks
    */
   get weeks() {
-    return this.shadowRoot.querySelectorAll( "basic-calendar-week" ).array();
+    return this.shadowRoot.querySelectorAll('basic-calendar-week').array();
   },
 
   // Fill in the weeks.
   _refresh: function() {
     var firstDateOfMonth = this.firstDateOfMonth;
     var month = firstDateOfMonth.getMonth();
-    this.weeks.forEach( function( week, i ) {
+    this.weeks.forEach(function(week, i) {
 
-      var date = BasicCalendarDay.offsetDateByDays( firstDateOfMonth, 7 * i );
-      var firstDateOfWeek = BasicCalendarWeek.firstDateOfWeek( date, this.culture );
+      var date = BasicCalendarDay.offsetDateByDays(firstDateOfMonth, 7 * i);
+      var firstDateOfWeek = BasicCalendarWeek.firstDateOfWeek(date, this.culture);
       
       // For the first week of the month, use the first of the month as the
       // reference date of that week. For subsequent weeks, use the first of
       // the given week.
-      week.date = ( i == 0 )
+      week.date = (i == 0)
         ? date
-        : BasicCalendarWeek.firstDateOfWeek( date, this.culture );
+        : BasicCalendarWeek.firstDateOfWeek(date, this.culture);
 
       // Hide weeks completely in another month (i.e., the next month).
       // Apply "hidden" class to preserve week's original "display" property.
-      var lastDateOfWeek = BasicCalendarDay.offsetDateByDays( firstDateOfWeek, 6 );
-      var isWeekInMonth = ( firstDateOfWeek.getMonth() === month || lastDateOfWeek.getMonth() === month );
-      week.classList.toggle( "outsideMonth", !isWeekInMonth );
-    }.bind( this ));
+      var lastDateOfWeek = BasicCalendarDay.offsetDateByDays(firstDateOfWeek, 6);
+      var isWeekInMonth = (firstDateOfWeek.getMonth() === month || lastDateOfWeek.getMonth() === month);
+      week.classList.toggle('outsideMonth', !isWeekInMonth);
+    }.bind(this));
   }
 
-} );
+});
 </script>
 
 </polymer-element>

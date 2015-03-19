@@ -1,0 +1,112 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>Basic tests for basic-calendar-month-days</title>
+
+  <script src="../../webcomponentsjs/webcomponents.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+
+  <!-- Step 1: import the element to test -->
+  <link rel="import" href="../basic-calendar-month-days.html">
+</head>
+<body>
+
+  <!-- You use the document as a place to set up your fixtures. -->
+  <basic-calendar-month-days id="bcmd1"></basic-calendar-month-days>
+
+  <script>
+  var bcmd1 = document.querySelector('#bcmd1');
+
+  suite('basic', function() {
+
+    test('default date', function(done) {
+      var now = new Date();
+      assert.equal(now.getDay(), bcmd1.date.getDay());
+      assert.equal(now.getMonth(), bcmd1.date.getMonth());
+      assert.equal(now.getFullYear(), bcmd1.date.getFullYear());
+      done();
+    });
+
+    test('set date attribute', function(done) {
+      var now = new Date();
+      bcmd1.date = now;
+      flush(function() {
+        assert.deepEqual(now, bcmd1.date);
+        done();
+      });
+    });
+
+    test('dayElementForDate', function(done) {
+      var elem = bcmd1.dayElementForDate(new Date());
+      assert(elem);
+      done();
+    });
+
+    test('firstDayOfMonth', function(done) {
+      var date = new Date('10 March 2015');
+      bcmd1.date = date;
+      flush(function() {
+        var val = bcmd1.firstDateOfMonth;
+        assert.deepEqual(val, new Date('1 March 2015'));
+        done();
+      });
+    });
+
+    test('isDateInMonth - true', function(done) {
+      var date = new Date('2 February 2015');
+      bcmd1.date = date;
+      flush(function() {
+        assert(bcmd1.isDateInMonth(date));
+        done();
+      });
+    });
+
+    test('isDateInMonth - false', function(done) {
+      var date = new Date('2 February 2015');
+      var badDate = new Date('2 March 2015');
+      bcmd1.date = date;
+      flush(function() {
+        assert(!bcmd1.isDateInMonth(badDate));
+        done();
+      });
+    });
+
+    test('lastDateOfMonth', function(done) {
+      var date = new Date('10 March 2015');
+      bcmd1.date = date;
+      flush(function() {
+        var last = bcmd1.lastDateOfMonth;
+        assert.deepEqual(last, new Date('31 March 2015'));
+        done();
+      });
+    });
+
+    test('weekElementForDate', function(done) {
+      var date = new Date('10 March 2015');
+      bcmd1.date = date;
+      flush(function() {
+        var elem = bcmd1.weekElementForDate(new Date('1 March 2015'));
+        assert(elem);
+        elem = bcmd1.weekElementForDate(new Date('1 December 2015'));
+        assert(!elem);
+        done();
+      });
+    });
+
+    test('weeks', function(done) {
+      var date = new Date('10 March 2015');
+      bcmd1.date = date;
+      flush(function() {
+        assert(bcmd1.weeks);
+        assert.equal(bcmd1.weeks.length, 6);
+        done();
+      });
+    });
+
+  });
+  </script>
+
+</body>
+</html>
