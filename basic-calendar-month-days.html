@@ -3,65 +3,48 @@ Shows the days for a single month: just the days, no headers.
 
 To the degree possible, all language/culture-specific aspects of this component
 are localizable with the Globalize library (https://github.com/jquery/globalize).
-(This currently works with Globalize 0.x. This component will be updated to work
-with Globalize 1.x-alpha, which is substantially different, when that edition
-leaves alpha status.)
 
 @element basic-calendar-month-days
-@demo http://basic-web-components.github.io/components/basic-calendar-month-days/
+@demo http://basic-web-components.github.io/basic-web-components/src/basic-calendar-month-days/?dom=shadow
 -->
 
-<link rel="import" href="../basic-element/basic-element.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../basic-shared/basic-shared.html">
 <link rel="import" href="../basic-calendar-day/basic-calendar-day.html">
 <link rel="import" href="../basic-calendar-week/basic-calendar-week.html">
 
-<polymer-element name="basic-calendar-month-days" extends="basic-element" attributes="culture date dayElement">
+<dom-module id="basic-calendar-month-days">
+  <template>
 
-<template>
+    <style>
+    :host {
+      display: table-row-group;
+    }
 
-  <style>
-  :host {
-    display: table-row-group;
-  }
+    basic-calendar-week.outsideMonth {
+      display: none;
+    }
 
-  basic-calendar-week.outsideMonth {
-    display: none;
-  }
+    /* TODO: How to replace deprecated use of ::shadow? */
+    basic-calendar-week::shadow .day.outsideMonth {
+      visibility: hidden;
+    }
+    </style>
 
-  polyfill-next-selector {
-    content: 'basic-calendar-week .day.outsideMonth';
-  }
-  basic-calendar-week::shadow .day.outsideMonth {
-    visibility: hidden;
-  }
-  </style>
+    <basic-calendar-week day-element="{{dayElement}}"></basic-calendar-week>
+    <basic-calendar-week day-element="{{dayElement}}"></basic-calendar-week>
+    <basic-calendar-week day-element="{{dayElement}}"></basic-calendar-week>
+    <basic-calendar-week day-element="{{dayElement}}"></basic-calendar-week>
+    <basic-calendar-week day-element="{{dayElement}}"></basic-calendar-week>
+    <basic-calendar-week day-element="{{dayElement}}"></basic-calendar-week>
 
-  <basic-calendar-week dayElement="{{dayElement}}"></basic-calendar-week>
-  <basic-calendar-week dayElement="{{dayElement}}"></basic-calendar-week>
-  <basic-calendar-week dayElement="{{dayElement}}"></basic-calendar-week>
-  <basic-calendar-week dayElement="{{dayElement}}"></basic-calendar-week>
-  <basic-calendar-week dayElement="{{dayElement}}"></basic-calendar-week>
-  <basic-calendar-week dayElement="{{dayElement}}"></basic-calendar-week>
-
-</template>
+  </template>
+</dom-module>
 
 <script>
 Polymer({
 
-  /**
-   * The Globalize culture/language assigned to this element.
-   *
-   * @attribute culture
-   */
-  culture: null,
-
-  cultureChanged: function() {
-    var culture = this.culture;
-    this.weeks.forEach(function(week) {
-      week.culture = culture;
-    });
-    this._refresh();
-  },
+  behaviors: [Basic.CalendarHelpers],
 
   /**
    * Returns the array of day elements for the days in the month.
@@ -74,20 +57,6 @@ Polymer({
       days = days.concat(week.days);
     });
     return days;
-  },
-
-  /**
-   * The date govering which month is shown by the element. This can be any
-   * date within the month.
-   *
-   * @attribute date
-   * @type Date
-   * @default today
-   */
-  date: null,
-
-  dateChanged: function() {
-    this._refresh();
   },
 
   /**
@@ -110,10 +79,12 @@ Polymer({
    * @property firstDateOfMonth
    */
   get firstDateOfMonth() {
-    var date = BasicCalendarDay.midnightOnDate(this.date);
+    var date = this.midnightOnDate(this.date);
     date.setDate(1);
     return date;
   },
+
+  is: 'basic-calendar-month-days',
 
   /**
    * Returns true if the given date is in the month shown.
@@ -122,7 +93,7 @@ Polymer({
    * @param date
    */
   isDateInMonth: function(date) {
-    var firstDateOfNextMonth = BasicCalendarDay.offsetDateByDays(this.lastDateOfMonth, 1);
+    var firstDateOfNextMonth = this.offsetDateByDays(this.lastDateOfMonth, 1);
     return (date >= this.firstDateOfMonth && date < firstDateOfNextMonth);
   },
 
@@ -142,11 +113,41 @@ Polymer({
     return date;
   },
 
+  properties: {
+    /**
+     * The Globalize culture/language assigned to this element.
+     *
+     * @attribute culture
+     */
+    culture: {
+      value: null,
+      observer: '_cultureChanged'
+    },
+
+    date: {
+      type: Date,
+      value: null,
+      observer: '_dateChanged'
+    },
+
+    /**
+     * The name of the element type that should be used to represent each day
+     * in the month.
+     *
+     * @attribute dayElement
+     * @type String
+     * @default basic-calendar-day
+     */
+    dayElement: {
+      type: String
+    }
+
+  },
+
   ready: function() {
-    this.super();
-    if (!this.date && typeof BasicCalendarDay.today !== 'undefined') {
+    if (!this.date && typeof this.today !== 'undefined') {
       // If no date is supplied, default to the current month.
-      this.date = BasicCalendarDay.today();
+      this.date = this.today();
     }
   },
 
@@ -158,7 +159,7 @@ Polymer({
    */
   weekElementForDate: function(date) {
     if (this.isDateInMonth(date)) {
-      var offset = BasicCalendarWeek.daysSinceFirstDayOfWeek(this.firstDateOfMonth, this.culture);
+      var offset = this.daysSinceFirstDayOfWeek(this.firstDateOfMonth, this.culture);
       weekIndex = Math.floor((date.getDate() + offset - 1) / 7);
       return this.weeks[weekIndex];
     }
@@ -174,28 +175,44 @@ Polymer({
    * @property weeks
    */
   get weeks() {
-    return this.shadowRoot.querySelectorAll('basic-calendar-week').array();
+    return Polymer.dom(this.root).querySelectorAll('basic-calendar-week');
+  },
+
+  _cultureChanged: function() {
+    var culture = this.culture;
+    this.weeks.forEach(function(week) {
+      week.culture = culture;
+    });
+    this._refresh();
+  },
+
+  _dateChanged: function() {
+    this._refresh();
   },
 
   // Fill in the weeks.
   _refresh: function() {
+    if (!this.date) {
+      return;
+    }
+
     var firstDateOfMonth = this.firstDateOfMonth;
     var month = firstDateOfMonth.getMonth();
     this.weeks.forEach(function(week, i) {
 
-      var date = BasicCalendarDay.offsetDateByDays(firstDateOfMonth, 7 * i);
-      var firstDateOfWeek = BasicCalendarWeek.firstDateOfWeek(date, this.culture);
-      
+      var date = this.offsetDateByDays(firstDateOfMonth, 7 * i);
+      var firstDateOfWeek = this.firstDateOfWeek(date, this.culture);
+
       // For the first week of the month, use the first of the month as the
       // reference date of that week. For subsequent weeks, use the first of
       // the given week.
       week.date = (i == 0)
         ? date
-        : BasicCalendarWeek.firstDateOfWeek(date, this.culture);
+        : this.firstDateOfWeek(date, this.culture);
 
       // Hide weeks completely in another month (i.e., the next month).
       // Apply "hidden" class to preserve week's original "display" property.
-      var lastDateOfWeek = BasicCalendarDay.offsetDateByDays(firstDateOfWeek, 6);
+      var lastDateOfWeek = this.offsetDateByDays(firstDateOfWeek, 6);
       var isWeekInMonth = (firstDateOfWeek.getMonth() === month || lastDateOfWeek.getMonth() === month);
       week.classList.toggle('outsideMonth', !isWeekInMonth);
     }.bind(this));
@@ -203,5 +220,3 @@ Polymer({
 
 });
 </script>
-
-</polymer-element>
